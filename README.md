@@ -8,8 +8,7 @@ A GitHub Action that executes commands on non-x86 CPU architecture (armv6, armv7
 
 This action requires three input parameters:
 
-* `arch`: CPU architecture: `armv6`, `armv7`, `aarch64`, `s390x`, or `ppc64le`. See [Supported Platforms](#supported-platforms) for the full matrix.
-* `distro`: Linux distribution name: `ubuntu16.04`, `ubuntu18.04`, `ubuntu20.04`, `bullseye`, `buster`, `stretch`, `jessie`, `fedora_latest`, `alpine_latest` or `archarm_latest`. See [Supported Platforms](#supported-platforms) for the full matrix.
+* `image`: docker image built with a specific CPU architecture: ex) `quay.io/pypa/manylinux2014_aarch64`, `arm64v8/alpine`, `quay.io/pypa/manylinux_2_24_s390x`, etc.
 * `run`: Shell commands to execute in the container.
 
 The action also accepts some optional input parameters:
@@ -32,15 +31,14 @@ jobs:
   armv7_job:
     # The host should always be Linux
     runs-on: ubuntu-18.04
-    name: Build on ubuntu-18.04 armv7
+    name: Build on arm64v8/alpine
     steps:
       - uses: actions/checkout@v2.1.0
-      - uses: uraimo/run-on-arch-action@v2.0.5
+      - uses: bab2min/run-on-arch-action@use-custom-image
         name: Run commands
         id: runcmd
         with:
-          arch: armv7
-          distro: ubuntu18.04
+          image: arm64v8/alpine
 
           # Not required, but speeds up builds by storing container images in
           # a GitHub package registry.
@@ -68,22 +66,19 @@ jobs:
   build_job:
     # The host should always be linux
     runs-on: ubuntu-18.04
-    name: Build on ${{ matrix.distro }} ${{ matrix.arch }}
+    name: Build on ${{ matrix.image }}
 
-    # Run steps on a matrix of 3 arch/distro combinations
+    # Run steps on a matrix of 3 images
     strategy:
       matrix:
         include:
-          - arch: aarch64
-            distro: ubuntu18.04
-          - arch: ppc64le
-            distro: alpine_latest
-          - arch: s390x
-            distro: fedora_latest
+          - image: quay.io/pypa/manylinux2014_aarch64
+          - image: arm64v8/alpine
+          - image: quay.io/pypa/manylinux_2_24_s390x
 
     steps:
       - uses: actions/checkout@v2.1.0
-      - uses: uraimo/run-on-arch-action@v2.0.5
+      - uses: bab2min/run-on-arch-action@use-custom-image
         name: Build artifact
         id: build
         with:
@@ -141,26 +136,6 @@ jobs:
         run: |
           ls -al "${PWD}/artifacts"
 ```
-
-## Supported Platforms
-
-This table details the valid `arch`/`distro` combinations:
-
-
-| arch     | distro     |
-| -------- | ---------- |
-| armv6    | jessie, stretch, buster, bullseye, alpine_latest |
-| armv7    | jessie, stretch, buster, bullseye, ubuntu16.04, ubuntu18.04, ubuntu20.04, fedora_latest, alpine_latest, archarm_latest |
-| aarch64  | stretch, buster, bullseye, ubuntu16.04, ubuntu18.04, ubuntu20.04, fedora_latest, alpine_latest, archarm_latest |
-| s390x    | jessie, stretch, buster, bullseye, ubuntu16.04, ubuntu18.04, ubuntu20.04, fedora_latest, alpine_latest |
-| ppc64le  | jessie, stretch, buster, bullseye, ubuntu16.04, ubuntu18.04,ubuntu20.04, fedora_latest, alpine_latest |
-
-
-Using an invalid `arch`/`distro` combination will fail.
-
-## Contributing
-
-New distros and archs can be added simply by creating a Dockerfile named `Dockerfile.{arch}.{distro}` (that targets an image for the desired combination) in the [Dockerfiles](https://github.com/uraimo/run-on-arch-action/blob/master/Dockerfiles) directory. Pull requests welcome!
 
 ## Authors
 
