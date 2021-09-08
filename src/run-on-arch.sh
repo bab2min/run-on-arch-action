@@ -90,7 +90,7 @@ run_container () {
     -v "${ACTION_DIR}:${ACTION_DIR}" \
     --tty \
     ${DOCKER_RUN_ARGS[@]} \
-    "quay.io/pypa/manylinux2014_aarch64:latest" \
+    "${CONTAINER_NAME}:latest" \
     "${ACTION_DIR}/src/run-on-arch-commands.sh"
 }
 

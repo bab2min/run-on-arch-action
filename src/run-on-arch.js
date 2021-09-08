@@ -21,7 +21,7 @@ async function main() {
   const dockerFile = path.join(
     __dirname, '..', 'Dockerfiles', `Dockerfile.${arch}.${distro}`);
   if (!fs.existsSync(dockerFile)) {
-    throw new Error(`run-on-arch: ${dockerFile} does not exist.`);
+    //throw new Error(`run-on-arch: ${dockerFile} does not exist.`);
   }
 
   // Write setup commands to a script file for sourcing
@@ -101,7 +101,7 @@ async function main() {
   console.log('Configuring Docker for multi-architecture support')
   await exec(
     path.join(__dirname, 'run-on-arch.sh'),
-    [ dockerFile, containerName, ...dockerRunArgs ],
+    [ dockerFile, distro, ...dockerRunArgs ],
     { env },
   );
 }
