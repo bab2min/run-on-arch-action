@@ -26,7 +26,7 @@ async function main() {
   // If no shell provided, default to sh for alpine, bash for others
   let shell = core.getInput('shell');
   if (!shell) {
-    if (/alpine/.test(distro)) {
+    if (/alpine/.test(image)) {
       shell = '/bin/sh';
     } else {
       shell = '/bin/bash';
