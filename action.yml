@@ -1,18 +1,14 @@
-name: 'Run on architecture'
+name: 'Run Images on architecture'
 branding:
   icon: 'cpu'
   color: 'green'
-description: 'Run commands in a Linux container with a specific CPU architecture (armv6, armv7, aarch64, s390x, ppc64le)'
+description: 'Run commands in a specific docker image with qeum installed (armv6, armv7, aarch64, s390x, ppc64le available)'
 author: 'Umberto Raimondi, Elijah Shaw-Rutschman'
 inputs:
-  arch:
-    description: 'CPU architecture: armv6, armv7, aarch64, s390x, ppc64le.'
+  image:
+    description: 'Docker image: ex) quay.io/pypa/manylinux2014_aarch64, arm64v8/alpine, quay.io/pypa/manylinux_2_24_s390x, etc.'
     required: false
-    default: 'aarch64'
-  distro:
-    description: 'Linux distribution name: ubuntu16.04, ubuntu18.04, ubuntu20.04, bullseye, buster, stretch, jessie, fedora_latest, alpine_latest, archarm_latest.'
-    required: false
-    default: 'ubuntu18.04'
+    default: 'quay.io/pypa/manylinux2014_aarch64'
   githubToken:
     description: 'Your GitHub token, used for caching Docker images in your project''s public package registry. Usually this would just be $\{{ github.token }}. This speeds up builds and is highly recommended.'
     required: true

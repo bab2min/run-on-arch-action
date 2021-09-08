@@ -14,7 +14,7 @@ async function main() {
     throw new Error('run-on-arch supports only Linux')
   }
 
-  const distro = core.getInput('distro', { required: true });
+  const image = core.getInput('image', { required: true });
 
   // Write setup commands to a script file for sourcing
   let setup = core.getInput('setup');
@@ -87,7 +87,7 @@ async function main() {
   console.log('Configuring Docker for multi-architecture support')
   await exec(
     path.join(__dirname, 'run-on-arch.sh'),
-    [ distro, ...dockerRunArgs ],
+    [ image, ...dockerRunArgs ],
     { env },
   );
 }
