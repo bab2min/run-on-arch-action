@@ -103,28 +103,6 @@ jobs:
           # The shell to run commands with in the container
           shell: /bin/sh
 
-          # Install some dependencies in the container. This speeds up builds if
-          # you are also using githubToken. Any dependencies installed here will
-          # be part of the container image that gets cached, so subsequent
-          # builds don't have to re-install them. The image layer is cached
-          # publicly in your project's package repository, so it is vital that
-          # no secrets are present in the container state or logs.
-          install: |
-            case "${{ matrix.distro }}" in
-              ubuntu*|jessie|stretch|buster|bullseye)
-                apt-get update -q -y
-                apt-get install -q -y git
-                ;;
-              fedora*)
-                dnf -y update
-                dnf -y install git which
-                ;;
-              alpine*)
-                apk update
-                apk add git
-                ;;
-            esac
-
           # Produce a binary artifact and place it in the mounted volume
           run: |
             cp $(which git) "/artifacts/${artifact_name}"
