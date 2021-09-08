@@ -33,17 +33,6 @@ async function main() {
     }
   }
 
-  // Write install commands to a script file for running in the Dockerfile
-  const install = [
-    `#!${shell}`, 'set -eu;', 'export DEBIAN_FRONTEND=noninteractive;',
-    core.getInput('install'),
-  ].join('\n');
-  fs.writeFileSync(
-    // Must be in same directory as Dockerfiles
-    path.join(__dirname, '..', 'Dockerfiles', 'run-on-arch-install.sh'),
-    install,
-  );
-
   // Write container commands to a script file for running
   const commands = [
     `#!${shell}`, 'set -eu;', core.getInput('run', { required: true }),
