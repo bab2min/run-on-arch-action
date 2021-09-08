@@ -3,10 +3,9 @@
 set -euo pipefail
 
 # Args
-DOCKERFILE=$1
-CONTAINER_NAME=$2
+CONTAINER_NAME=$1
 # Remainder of args get passed to docker
-declare -a DOCKER_RUN_ARGS=${@:3:${#@}}
+declare -a DOCKER_RUN_ARGS=${@:2:${#@}}
 
 # Defaults
 ACTION_DIR="$(cd "$(dirname "$0")"/.. >/dev/null 2>&1 ; pwd -P)"
