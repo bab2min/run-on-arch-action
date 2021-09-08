@@ -3,15 +3,12 @@
 set -euo pipefail
 
 # Args
-DOCKERFILE=$1
-CONTAINER_NAME=$2
+CONTAINER_NAME=$1
 # Remainder of args get passed to docker
-declare -a DOCKER_RUN_ARGS=${@:3:${#@}}
+declare -a DOCKER_RUN_ARGS=${@:2:${#@}}
 
 # Defaults
 ACTION_DIR="$(cd "$(dirname "$0")"/.. >/dev/null 2>&1 ; pwd -P)"
-LOWERCASE_REPOSITORY=$(printf "%s" "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
-PACKAGE_REGISTRY="ghcr.io/${LOWERCASE_REPOSITORY}/${CONTAINER_NAME}"
 DEBIAN_FRONTEND=noninteractive
 
 show_build_log_and_exit () {
@@ -38,44 +35,6 @@ install_deps () {
   sudo apt-get update -q -y
   sudo apt-get -qq install -y qemu qemu-user-static
   docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-}
-
-build_container () {
-  # Build the container image.
-
-  # If the GITHUB_TOKEN env var has a value, the container images will be
-  # cached between builds.
-  if [[ -z "${GITHUB_TOKEN:-}" ]]
-  then
-    docker build \
-      "${ACTION_DIR}/Dockerfiles" \
-      --file "$DOCKERFILE" \
-      --tag "${CONTAINER_NAME}:latest"
-  else
-    # Build optimization that uses GitHub package registry to cache docker
-    # images, based on Thai Pangsakulyanont's experiments.
-    # Read about it: https://dev.to/dtinth/caching-docker-builds-in-github-actions-which-approach-is-the-fastest-a-research-18ei
-    # Implementation is `build_with_gpr` here: https://github.com/dtinth/github-actions-docker-layer-caching-poc/blob/master/.github/workflows/dockerimage.yml
-    # About GitHub package registry: https://docs.github.com/en/packages/publishing-and-managing-packages/about-github-packages#support-for-package-registries
-    echo "GitHub token provided, caching to $PACKAGE_REGISTRY"
-
-    # Login without echoing token, just in case
-    BASH_FLAGS="$-"
-    set +x
-    echo "$GITHUB_TOKEN" | docker login ghcr.io \
-      -u "$GITHUB_ACTOR" \
-      --password-stdin
-    set "$BASH_FLAGS"
-
-    docker pull "$PACKAGE_REGISTRY:latest" || true
-    docker build \
-      "${ACTION_DIR}/Dockerfiles" \
-      --file "$DOCKERFILE" \
-      --tag "${CONTAINER_NAME}:latest" \
-      --cache-from="$PACKAGE_REGISTRY"
-    docker tag "${CONTAINER_NAME}:latest" "$PACKAGE_REGISTRY" \
-      && docker push "$PACKAGE_REGISTRY" || true
-  fi
 }
 
 run_container () {
@@ -138,5 +97,4 @@ run_container () {
 quiet rm -f build-log.txt
 quiet install_deps
 
-build_container
 run_container

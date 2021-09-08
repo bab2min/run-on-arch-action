@@ -14,15 +14,7 @@ async function main() {
     throw new Error('run-on-arch supports only Linux')
   }
 
-  const arch = core.getInput('arch', { required: true });
-  const distro = core.getInput('distro', { required: true });
-
-  // If bad arch/distro passed, fail fast before installing all the qemu stuff
-  const dockerFile = path.join(
-    __dirname, '..', 'Dockerfiles', `Dockerfile.${arch}.${distro}`);
-  if (!fs.existsSync(dockerFile)) {
-    throw new Error(`run-on-arch: ${dockerFile} does not exist.`);
-  }
+  const image = core.getInput('image', { required: true });
 
   // Write setup commands to a script file for sourcing
   let setup = core.getInput('setup');
@@ -92,16 +84,10 @@ async function main() {
     });
   }
 
-  // Generate a container name slug unique to this workflow
-  const containerName = slug([
-    'run-on-arch', env.GITHUB_REPOSITORY, env.GITHUB_WORKFLOW,
-    arch, distro,
-  ].join('-'));
-
   console.log('Configuring Docker for multi-architecture support')
   await exec(
     path.join(__dirname, 'run-on-arch.sh'),
-    [ dockerFile, containerName, ...dockerRunArgs ],
+    [ image, ...dockerRunArgs ],
     { env },
   );
 }
