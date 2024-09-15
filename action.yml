@@ -18,8 +18,13 @@ inputs:
     required: false
     default: ''
   run:
-    description: 'Shell commands to execute in the container.'
-    required: true
+    description: 'Shell commands to execute in the container. Either this or `multipleRun` is required.'
+    required: false
+    default: ''
+  multipleRun:
+    description: 'Multiple shell commands to execute in the container. YAML, but must begin with a | character. These commands will be executed in sequence. Either this or `run` is required.'
+    required: false
+    default: ''
   shell:
     description: 'The shell to run commands with in the container. Default: /bin/sh on alpine (because Alpine uses BusyBox), /bin/bash for other distros.'
     required: false

@@ -33,15 +33,6 @@ async function main() {
     }
   }
 
-  // Write container commands to a script file for running
-  const commands = [
-    `#!${shell}`, 'set -eu;', core.getInput('run', { required: true }),
-  ].join('\n');
-  fs.writeFileSync(
-    path.join(__dirname, 'run-on-arch-commands.sh'),
-    commands,
-  );
-
   // Parse dockerRunArgs into an array with shlex
   const dockerRunArgs = shlex.split(core.getInput('dockerRunArgs'));
 
@@ -73,12 +64,59 @@ async function main() {
     });
   }
 
+  core.startGroup('Prepare docker');
   console.log('Configuring Docker for multi-architecture support')
   await exec(
-    path.join(__dirname, 'run-on-arch.sh'),
+    path.join(__dirname, 'prepare_worker.sh'),
     [ image, ...dockerRunArgs ],
     { env },
   );
+  core.endGroup();
+  
+  let runs = [];
+  if (core.getInput('run')) {
+    const script = core.getInput('run');
+    const firstLine = script.split('\n')[0];
+    runs.push({ name: firstLine, run: script });
+  } else if (core.getInput('multipleRun')) {
+    const parsed = YAML.parse(core.getInput('multipleRun'));
+    if (!Array.isArray(parsed)) {
+      throw new Error('run-on-arch: multipleRun must be a list of {name, run} objects');
+    }
+    for (const i in parsed) {
+      const item = parsed[i];
+      if (typeof item !== 'object') {
+        throw new Error('run-on-arch: multipleRun must be a list of {name, run} objects');
+      }
+      if (!item.run) {
+        throw new Error('run-on-arch: multipleRun objects must have run key');
+      }
+      if (!item.name) {
+        item.name = item.run.split('\n')[0];
+      }
+      runs.push(item);
+    }
+  }
+
+  for (const run of runs) {
+    core.startGroup(run.name);
+    // Write container commands to a script file for running
+    const commands = [
+      `#!${shell}`, 'set -eu;', run.run,
+    ].join('\n');
+    fs.writeFileSync(
+      path.join(__dirname, 'run-on-arch-commands.sh'),
+      commands,
+    );
+
+    await exec(
+      "docker",
+      ["exec", "-t", "worker", shell, path.join(__dirname, 'run-on-arch-commands.sh')],
+      { env },
+    );
+    core.endGroup();
+  }
+  
 }
 
 main().catch(err => {
