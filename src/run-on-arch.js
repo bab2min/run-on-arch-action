@@ -5,10 +5,6 @@ const YAML = require('yaml');
 const shlex = require('shlex');
 const { exec } = require('@actions/exec')
 
-function slug(str) {
-  return str.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
-}
-
 async function main() {
   if (process.platform !== 'linux') {
     throw new Error('run-on-arch supports only Linux')
