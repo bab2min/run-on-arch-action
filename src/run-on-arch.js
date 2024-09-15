@@ -61,7 +61,11 @@ async function main() {
   }
 
   core.startGroup('Prepare docker');
-  console.log('Configuring Docker for multi-architecture support')
+  console.log('Configuring Docker for multi-architecture support');
+  await exec(
+    "chmod",
+    ["+x", path.join(__dirname, 'run-on-arch.sh')],
+  );
   await exec(
     path.join(__dirname, 'run-on-arch.sh'),
     [ image, ...dockerRunArgs ],
