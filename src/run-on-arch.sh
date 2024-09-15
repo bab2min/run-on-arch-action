@@ -86,6 +86,7 @@ run_container () {
     -v "${GITHUB_WORKSPACE}:${GITHUB_WORKSPACE}" \
     -v "${ACTION_DIR}:${ACTION_DIR}" \
     --name worker \
+    -d \
     ${DOCKER_RUN_ARGS[@]} \
     "${CONTAINER_NAME}:latest" \
     /bin/bash -c "while true; do sleep 10000; done"
